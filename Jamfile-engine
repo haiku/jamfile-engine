@@ -1,4 +1,4 @@
-##	Haiku Generic Jamfile Engine v1.0.2
+##	Haiku Generic Jamfile Engine v1.0.3
 ##	Does all the hard work for the Generic Jamfile
 ##	which simply defines the project parameters.
 ##	Most of the real work is done in the Jambase
@@ -6,7 +6,7 @@
 ##	
 ##	Inspired by the Be Makefile Engine
 ##
-##	Supports Generic Jamfile v1.0.1
+##	Supports Generic Jamfile v1.0.3
 ##
 ##	Copyright (c) 2002-2010 Ryan Leavengood
 ##	Copyright (c) 2011 Peter Poláčik
@@ -27,6 +27,19 @@ rule AddResources
 actions AddResources
 {
 	$(XRES) -o "$(<)" $(>)
+}
+
+# Rc <Resource File> : <Resource definition file> ;
+#   Compile an rdef file into a binary resources file
+rule Rc
+{
+	Depends $(<) : $(>) ;
+	LOCATE on $(<) = $(LOCATE_TARGET) ;
+}
+
+actions Rc
+{
+	rc -o "$(<)" $(>)
 }
 
 # MimeSet <Application Name> ;
@@ -237,6 +250,13 @@ rule BeMain
 		Main $(<) : $(>) ;
 	}
 	
+	if ( $(RDEFS) )
+	{
+		RSRCS += $(NAME).rsrc ;
+
+		Rc $(NAME).rsrc : $(RDEFS) ;
+	}
+
 	if ( $(RSRCS) ) 
 	{
 		AddResources $(<) : $(RSRCS) ;
